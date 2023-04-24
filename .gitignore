@@ -130,3 +130,9 @@ dmypy.json
 
 # DS Store
 .DS_Store
+
+# ipynb notebooks checkpoints
+*.ipynb_checkpoints
+
+#datasets
+datasets/
