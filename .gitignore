@@ -136,3 +136,12 @@ dmypy.json
 
 #datasets
 datasets/
+
+#models
+Models/
+
+#weights
+Weights/
+
+#plots
+Plots/

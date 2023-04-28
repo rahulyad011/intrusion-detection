@@ -8,31 +8,44 @@ import pickle
 from os import path
 #numpy
 import numpy as np
+# for calculating accuracy of model
+from sklearn.metrics import accuracy_score
 
 # local imports
 from utility import load_dataset, print_data_statistics
-from preprocess import preprocessing
-from sklearn.metrics import accuracy_score # for calculating accuracy of model
+from preprocessing import preprocess
 
 #local imports
 from model_def import select_load_model_def
+from evaluation import evaluate
 
-def save_trained_model(model, model_name_suffix):
-    pkl_filename = "binary"+model_name_suffix+".pkl"
+def save_trained_model(model, model_dir,  model_name_suffix):
+    pkl_filename = model_dir+"/"+"binary"+model_name_suffix+".pkl"
     if (not path.isfile(pkl_filename)):
         # saving the trained model to disk
         with open(pkl_filename, 'wb') as file:
             pickle.dump(model, file)
             print("Saved model to disk")
+    else:
+        print("model with the same name exists on the disk, overwriting the existing model file")
+        # saving the trained model to disk
+        with open(pkl_filename, 'wb') as file:
+            pickle.dump(model, file)
+            print("Saved model to disk")
 
-def load_saved_model(model_name_suffix):
-    pkl_filename = "binary"+model_name_suffix+".pkl"
-    if (not path.isfile(pkl_filename)):
+def load_saved_model(model_dir, model_name_suffix):
+    pkl_filename =  model_dir+ "/"+ "binary" + model_name_suffix + ".pkl"
+    print("loading model from path:", pkl_filename)
+    model_cls = None
+    if (path.isfile(pkl_filename)):
+        print("inside folder")
         # loading the trained model from disk
         with open(pkl_filename, 'rb') as file:
-            model = pickle.load(file)
+            model_cls = pickle.load(file)
             print("Loaded model from disk")
-    return model
+    else:
+        print("No such saved model exists in the model directory, please train again")
+    return model_cls
 
 def data_split(bin_data):
     # splitting the dataset 75% for training and 25% testing
@@ -46,24 +59,38 @@ def data_split(bin_data):
     print(X_test.shape[0])
     return X_train, X_test, y_train, y_test
 
-def train(data_params, model_type):
+def train(data_params, model_type, predict_only):
     print("data_param: ", data_params)
     data = load_dataset(data_params)
     print("data is loaded for model training")
     print("spliting the dataset in train and test:")
     X_train, X_test, y_train, y_test = data_split(data)
     print("normalize the numeric columns")
-    X_train_norm = preprocessing(X_train, "min_max", "train")
-    X_test_norm = preprocessing(X_test, "min_max", "train")
+    X_train_norm, X_test_norm = preprocess(X_train, X_test, "min_max")
+    print("X_train_norm shape:", X_train_norm.shape)
+    print("X_train_norm shape:", X_test_norm.shape)
     # select and load model definition
     model = select_load_model_def(model_type)
+    model_save_dir = "Models"
+    #model naming conventions
+    data_name_arr = data_params.split()
+    data_string = "_".join(data_name_arr)
+    model_suffix_name = model_type+data_string
     # model training:
     if model_type == "SVM":
-        print("start model training:")
-        model.fit(X_train_norm,y_train) # training model on training dataset
-        model_suffix_name = "svm"+data_params[0]
-        save_trained_model(model, model_suffix_name)
-        predict(model, X_test_norm, y_test)
+        if predict_only:
+            # load model
+            print("loading model for prediction: ")
+            class_model = load_saved_model(model_save_dir, model_suffix_name)
+            print("checking loaded model: ")
+            if class_model is None:
+                raise Exception("requested model doesn't exist, please train again")
+            predict(class_model, model_type, X_test_norm, y_test)
+        else:
+            print("start model training:")
+            model.fit(X_train_norm,y_train) # training model on training dataset
+            save_trained_model(model, model_save_dir, model_suffix_name)
+            predict(model, data_string, model_type, X_test_norm, y_test)
     elif model_type == "MLP":
         history = model.fit(X_train, y_train, epochs=100, batch_size=5000,validation_split=0.2)
     elif model_type == "LSTM":
@@ -77,11 +104,12 @@ def train(data_params, model_type):
         return None
     # print(X_test.head())
 
-def predict(classifier, x_test_data, y_test_data):
-    #load model
-    # print("loading model for prediction: ")
-    # classifier = load_saved_model(model_suffix_name)
+def predict(classifier, dataset_name, model_type, x_test_data, y_test_data):
     y_pred = classifier.predict(x_test_data) # predicting target attribute on testing dataset
     ac = accuracy_score(y_test_data, y_pred)*100 # calculating accuracy of predicted data
-    print("LSVM-Classifier Binary Set-Accuracy is ", ac)
+    print("Classifier Binary Accuracy is ", ac)
+    plot_required = True
+    print("Evaluating the Classifier:")
+    evaluate(classifier, dataset_name, model_type, y_test_data, y_pred, plot_required)
+
 
