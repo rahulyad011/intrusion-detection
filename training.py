@@ -6,11 +6,16 @@ from sklearn.svm import SVC
 import pickle
 # getting path/dir using OS
 from os import path
+#numpy
+import numpy as np
 
 # local imports
 from utility import load_dataset, print_data_statistics
 from preprocess import preprocessing
 from sklearn.metrics import accuracy_score # for calculating accuracy of model
+
+#local imports
+from model_def import select_load_model_def
 
 def save_trained_model(model, model_name_suffix):
     pkl_filename = "binary"+model_name_suffix+".pkl"
@@ -41,7 +46,7 @@ def data_split(bin_data):
     print(X_test.shape[0])
     return X_train, X_test, y_train, y_test
 
-def train(data_params):
+def train(data_params, model_type):
     print("data_param: ", data_params)
     data = load_dataset(data_params)
     print("data is loaded for model training")
@@ -50,12 +55,26 @@ def train(data_params):
     print("normalize the numeric columns")
     X_train_norm = preprocessing(X_train, "min_max", "train")
     X_test_norm = preprocessing(X_test, "min_max", "train")
-    print("train SVM classifier:")
-    lsvm = SVC(kernel='linear',gamma='auto') 
-    lsvm.fit(X_train_norm,y_train) # training model on training dataset
-    model_suffix_name = "svm"+data_params[0]
-    save_trained_model(lsvm, model_suffix_name)
-    predict(lsvm, X_test_norm, y_test)
+    # select and load model definition
+    model = select_load_model_def(model_type)
+    # model training:
+    if model_type == "SVM":
+        print("start model training:")
+        model.fit(X_train_norm,y_train) # training model on training dataset
+        model_suffix_name = "svm"+data_params[0]
+        save_trained_model(model, model_suffix_name)
+        predict(model, X_test_norm, y_test)
+    elif model_type == "MLP":
+        history = model.fit(X_train, y_train, epochs=100, batch_size=5000,validation_split=0.2)
+    elif model_type == "LSTM":
+        X_train = np.array(X_train)
+        x_train = np.reshape(X_train, (X_train.shape[0],1,X_train.shape[1]))
+        history = model.fit(x_train, y_train, epochs=100, batch_size=5000,validation_split=0.2)
+    elif model_type == "AE":
+        pass
+    else:
+        raise Exception("requested model doesn't exist")
+        return None
     # print(X_test.head())
 
 def predict(classifier, x_test_data, y_test_data):
