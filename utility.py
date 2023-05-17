@@ -76,7 +76,7 @@ def save_eval_in_csv(dataset_used, model_type, c_accuracy, c_f1, c_fnr, c_fpr):
         df.loc[mask, 'F1_Score'] = c_f1
         df.loc[mask, 'False_Negative_Rate'] = c_fnr
         df.loc[mask, 'False_Postive_Rate'] = c_fpr
-        df.to_csv('evaluation_metrics.csv', index=False)
+        df.to_csv(result_filename, index=False)
         print(f"Updated existing entry: Dataset={dataset_used}, Classifier={model_type}")
     else:
         # Create a new DataFrame with the new entry
@@ -84,5 +84,5 @@ def save_eval_in_csv(dataset_used, model_type, c_accuracy, c_f1, c_fnr, c_fpr):
         
         # Concatenate the new DataFrame with the original DataFrame and save to CSV
         df = pd.concat([df, new_entry], ignore_index=True)
-        df.to_csv('evaluation_metrics.csv', index=False)
+        df.to_csv(result_filename, index=False)
         print(f"Added new entry: Dataset={dataset_used}, Classifier={model_type}")

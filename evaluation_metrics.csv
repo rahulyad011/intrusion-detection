@@ -1,2 +1,0 @@
-Dataset,Classifier,Accuracy,F1_Score,False_Negative_Rate,False_Postive_Rate
-kitsune_SSL,SVM,3.877514042398985,0.07465550322693179,0.0,0.0
