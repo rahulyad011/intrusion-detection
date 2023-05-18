@@ -41,8 +41,8 @@ def load_dataset(dataset_req):
         datadir_kit = datadir+"kitsume_network_attack_dataset"
         datafilepath = find_dataset(datadir_kit, data_req_param[1])
     else:
-        # datafilepath = find_dataset(datadir, data_req_param[0])
-        datafilepath = datadir+"CICIDS.csv"
+        datafilepath = find_dataset(datadir, data_req_param[0])
+        # datafilepath = datadir+"CICIDS.csv"
     if datafilepath == "":
         raise Exception("the requested dataset does not exist in the data directory")
         return 0
@@ -50,7 +50,8 @@ def load_dataset(dataset_req):
     bin_data_total.drop(bin_data_total.columns[0],axis=1,inplace=True)
     if "kitsune" == data_req_param[0]:
         bin_data_total.label = bin_data_total.label.astype(int)
-        bin_data_total.drop('Unnamed: 0',axis=1,inplace=True)
+        if 'Unnamed: 0' in bin_data_total.columns:
+            bin_data_total.drop('Unnamed: 0',axis=1,inplace=True)
     else:
         new_col_name = 'label'
         old_col_name = bin_data_total.columns[-1]

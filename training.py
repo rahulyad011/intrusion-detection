@@ -124,11 +124,11 @@ def train(data_params, model_type, predict_only, label_field):
         if model_type == "SVM":
             model.fit(X_train_norm,y_train) # training model on training dataset
         elif model_type == "MLP":
-            history = model.fit(X_train_norm, y_train, epochs=5, batch_size=64,validation_split=0.2)
+            history = model.fit(X_train_norm, y_train, epochs=50, batch_size=5000,validation_split=0.2)
         elif model_type == "LSTM":
             X_train_norm = np.array(X_train_norm)
             X_train_norm = np.reshape(X_train_norm, (X_train_norm.shape[0],1,X_train_norm.shape[1]))
-            history = model.fit(X_train_norm, y_train, epochs=5, batch_size=64,validation_split=0.2)
+            history = model.fit(X_train_norm, y_train, epochs=50, batch_size=5000,validation_split=0.2)
         elif model_type == "AE":
             # dataset excluding target attribute (encoded, one-hot-encoded,original)
             print(X_test_norm.columns)
@@ -136,7 +136,7 @@ def train(data_params, model_type, predict_only, label_field):
             X_train_norm = X_train_norm.values
             X_test = X_test.values
             y_test = y_test.values
-            history = model.fit(X_train_norm, X_train_norm, epochs=5, batch_size=64,validation_data=(X_test_norm, X_test_norm)).history
+            history = model.fit(X_train_norm, X_train_norm, epochs=50, batch_size=5000,validation_data=(X_test_norm, X_test_norm)).history
         else:
             raise Exception("requested model doesn't exist")
             return None
@@ -150,7 +150,7 @@ def ae_classifier(predictions_data, model_type, dataset_name, x_test_data, y_tes
     i_dim = predictions_data.shape[1]
     ae_model = autoencoder_classifier_def(i_dim)
     model_save_dir = "Models"
-    his = ae_model.fit(predictions_data, y_test, epochs=5, batch_size=50, validation_split=0.2).history
+    his = ae_model.fit(predictions_data, y_test, epochs=50, batch_size=5000, validation_split=0.2).history
     print("start model saving")
     save_trained_model(ae_model, model_save_dir, model_suffix_name, "AE_Clas")
     print("start prediction on test data")
