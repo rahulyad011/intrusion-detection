@@ -31,7 +31,8 @@ def evaluate(model, dataset_used, model_type, y_test, y_pred, plot):
     target_names = ['class 0', 'class 1']
     print(classification_report(y_test, y_pred, target_names=target_names))
     clf = model
-    cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    # cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    cm = confusion_matrix(y_test, y_pred)
     print("confusion matrix:")
     print(cm)
     # Compute TP, TN, FP, FN for each class
@@ -63,7 +64,7 @@ def evaluate(model, dataset_used, model_type, y_test, y_pred, plot):
 
 def plot_confusion_matrix(model, y_test, y_pred, cm, model_type):
     disp = ConfusionMatrixDisplay(confusion_matrix=cm,
-                                    display_labels=model.classes_)
+                                    display_labels=['0', '1'])
     disp.plot()
     plt.title(model_type+" Binary Classification")
     plt.savefig('Plots/'+model_type+'_confusion_matrix.png')

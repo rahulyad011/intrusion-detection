@@ -31,7 +31,7 @@ def mlp_def(input_layer_dim):
 def lstm_def(input_layer_dim):
     lst = Sequential()
     # input layer and LSTM layer with 50 neurons
-    input_features = x_train.shape[2]
+    input_features = input_layer_dim
     lst.add(LSTM(50,input_dim=input_features))
 
     # outpute layer with sigmoid activation
@@ -80,17 +80,16 @@ def autoencoder_classifier_def(input_layer_dim):
     print(ae_classifier.summary())
     return ae_classifier
 
-def select_load_model_def(model_type):
+def select_load_model_def(model_type, input_dim):
     if model_type == "SVM":
         print("load SVM classifier def:")
         lsvm = SVC(kernel='linear',gamma='auto') 
         return lsvm
     elif model_type == "MLP":
-        pass
+        return mlp_def(input_dim)
     elif model_type == "LSTM":
-        pass
+        return lstm_def(input_dim)
     elif model_type == "AE":
-        pass
+        return autoencoder_def(input_dim)
     else:
         return None
-     
